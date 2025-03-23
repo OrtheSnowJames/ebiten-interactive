@@ -4,7 +4,7 @@ package button
 import (
 	"image/color"
 	"math"
-
+	"github.com/OrtheSnowJames/ebiten-interactive/interact/colorscheme"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/text"
@@ -66,6 +66,8 @@ type Button struct {
 	Invisible         bool
 	Uneditable        bool
 	UseRoundedCorners bool
+	UsePointyStyle    bool    // New field for pointy buttons
+	PointyAmount      float32 // How pointy the buttons are (arrow length)
 
 	prevMouseDown bool
 	clicked       bool
@@ -78,8 +80,8 @@ func NewButton(x, y, width, height float32, label string) *Button {
 		BackgroundColor:   color.RGBA{R: 211, G: 211, B: 211, A: 255}, // LightGray
 		HoverColor:        color.RGBA{R: 200, G: 200, B: 200, A: 255},
 		PressedColor:      color.RGBA{R: 169, G: 169, B: 169, A: 255}, // DarkGray
-		BorderColor:       color.RGBA{R: 0, G: 0, B: 0, A: 255},         // Black
-		TextColor:         color.RGBA{R: 0, G: 0, B: 0, A: 255},         // Black
+		BorderColor:       color.RGBA{R: 0, G: 0, B: 0, A: 255},       // Black
+		TextColor:         color.RGBA{R: 0, G: 0, B: 0, A: 255},       // Black
 		FontSize:          20,
 		FontFace:          DefaultFont,
 		IsHovered:         false,
@@ -91,6 +93,8 @@ func NewButton(x, y, width, height float32, label string) *Button {
 		Invisible:         false,
 		Uneditable:        false,
 		UseRoundedCorners: true,
+		UsePointyStyle:    false,
+		PointyAmount:      10.0, // Default pointy amount (arrow length)
 		prevMouseDown:     false,
 		clicked:           false,
 	}
@@ -136,12 +140,24 @@ func (b *Button) IsUneditable() bool {
 	return b.Uneditable
 }
 
+func (btn *Button) SetColorScheme(scheme colorscheme.ColorScheme) {
+	btn.SetColors(scheme.Background, scheme.Hover, scheme.Pressed, scheme.Border, scheme.Text)
+}
+
 func (b *Button) SetRoundedCorners(rounded bool) {
 	b.UseRoundedCorners = rounded
 }
 
 func (b *Button) IsRoundedCorners() bool {
 	return b.UseRoundedCorners
+}
+
+func (b *Button) SetPointyStyle(pointy bool) {
+	b.UsePointyStyle = pointy
+}
+
+func (b *Button) SetPointyAmount(amount float32) {
+	b.PointyAmount = amount
 }
 
 // Update should be called every frame.
@@ -222,8 +238,10 @@ func (b *Button) Draw(screen *ebiten.Image) {
 		borderThickness = 3.0
 	}
 
-	// Draw the button rectangle
-	if b.UseRoundedCorners {
+	// Draw the button rectangle with appropriate style
+	if b.UsePointyStyle {
+		drawPointyButton(screen, b.Bounds, b.PointyAmount, currentColor, b.BorderColor, borderThickness)
+	} else if b.UseRoundedCorners {
 		drawRoundedRect(screen, b.Bounds.X, b.Bounds.Y, b.Bounds.W, b.Bounds.H, b.CornerRadius, currentColor)
 		drawRoundedRectOutline(screen, b.Bounds.X, b.Bounds.Y, b.Bounds.W, b.Bounds.H, b.CornerRadius, borderThickness, b.BorderColor)
 	} else {
@@ -255,34 +273,34 @@ func (b *Button) IsClicked() bool {
 
 // Helper function to draw a rounded rectangle filled with color.
 func drawRoundedRect(screen *ebiten.Image, x, y, w, h, r float32, col color.RGBA) {
-    path := &vector.Path{}
-    // Clamp radius to half of width/height.
-    r = float32(math.Min(float64(r), float64(w/2)))
-    r = float32(math.Min(float64(r), float64(h/2)))
+	path := &vector.Path{}
+	// Clamp radius to half of width/height.
+	r = float32(math.Min(float64(r), float64(w/2)))
+	r = float32(math.Min(float64(r), float64(h/2)))
 
-    // Start at top-left corner.
-    path.MoveTo(x+r, y)
-    // Top edge
-    path.LineTo(x+w-r, y)
-    // Top-right corner arc
-    path.Arc(x+w-r, y+r, r, -90, 0, vector.Clockwise)
-    // Right edge
-    path.LineTo(x+w, y+h-r)
-    // Bottom-right corner arc
-    path.Arc(x+w-r, y+h-r, r, 0, 90, vector.Clockwise)
-    // Bottom edge
-    path.LineTo(x+r, y+h)
-    // Bottom-left corner arc
-    path.Arc(x+r, y+h-r, r, 90, 180, vector.Clockwise)
-    // Left edge
-    path.LineTo(x, y+r)
-    // Top-left corner arc
-    path.Arc(x+r, y+r, r, 180, 270, vector.Clockwise)
-    path.Close()
+	// Start at top-left corner.
+	path.MoveTo(x+r, y)
+	// Top edge
+	path.LineTo(x+w-r, y)
+	// Top-right corner arc
+	path.Arc(x+w-r, y+r, r, -90, 0, vector.Clockwise)
+	// Right edge
+	path.LineTo(x+w, y+h-r)
+	// Bottom-right corner arc
+	path.Arc(x+w-r, y+h-r, r, 0, 90, vector.Clockwise)
+	// Bottom edge
+	path.LineTo(x+r, y+h)
+	// Bottom-left corner arc
+	path.Arc(x+r, y+h-r, r, 90, 180, vector.Clockwise)
+	// Left edge
+	path.LineTo(x, y+r)
+	// Top-left corner arc
+	path.Arc(x+r, y+r, r, 180, 270, vector.Clockwise)
+	path.Close()
 
 	op := &ebiten.DrawTrianglesOptions{}
-    // Draw filled path
-    vertices, indices := path.AppendVerticesAndIndicesForFilling(nil, nil)
+	// Draw filled path
+	vertices, indices := path.AppendVerticesAndIndicesForFilling(nil, nil)
 	screen.DrawTriangles(vertices, indices, nil, op)
 }
 
@@ -305,3 +323,44 @@ func drawRectOutline(screen *ebiten.Image, r Rect, thickness float32, col color.
 	ebitenutil.DrawLine(screen, float64(r.X+r.W), float64(r.Y), float64(r.X+r.W), float64(r.Y+r.H), col)
 }
 
+// New helper function to draw pointy buttons
+func drawPointyButton(screen *ebiten.Image, bounds Rect, pointyAmount float32, fillColor, borderColor color.RGBA, thickness float32) {
+	path := &vector.Path{}
+
+	// Calculate arrow points
+	leftPoint := bounds.X - pointyAmount
+	rightPoint := bounds.X + bounds.W + pointyAmount
+	verticalCenter := bounds.Y + bounds.H/2
+
+	// Draw the pointy shape
+	path.MoveTo(leftPoint, verticalCenter)            // Left point
+	path.LineTo(bounds.X, bounds.Y)                   // Top left
+	path.LineTo(bounds.X+bounds.W, bounds.Y)          // Top right
+	path.LineTo(rightPoint, verticalCenter)           // Right point
+	path.LineTo(bounds.X+bounds.W, bounds.Y+bounds.H) // Bottom right
+	path.LineTo(bounds.X, bounds.Y+bounds.H)          // Bottom left
+	path.Close()
+
+	// Fill the shape
+	vertices, indices := path.AppendVerticesAndIndicesForFilling(nil, nil)
+	op := &ebiten.DrawTrianglesOptions{}
+	op.FillRule = ebiten.EvenOdd
+
+	// Set the color for vertices
+	for i := range vertices {
+		vertices[i].ColorR = float32(fillColor.R) / 0xff
+		vertices[i].ColorG = float32(fillColor.G) / 0xff
+		vertices[i].ColorB = float32(fillColor.B) / 0xff
+		vertices[i].ColorA = float32(fillColor.A) / 0xff
+	}
+
+	screen.DrawTriangles(vertices, indices, nil, op)
+
+	// Draw outline
+	ebitenutil.DrawLine(screen, float64(leftPoint), float64(verticalCenter), float64(bounds.X), float64(bounds.Y), borderColor)
+	ebitenutil.DrawLine(screen, float64(bounds.X), float64(bounds.Y), float64(bounds.X+bounds.W), float64(bounds.Y), borderColor)
+	ebitenutil.DrawLine(screen, float64(bounds.X+bounds.W), float64(bounds.Y), float64(rightPoint), float64(verticalCenter), borderColor)
+	ebitenutil.DrawLine(screen, float64(rightPoint), float64(verticalCenter), float64(bounds.X+bounds.W), float64(bounds.Y+bounds.H), borderColor)
+	ebitenutil.DrawLine(screen, float64(bounds.X+bounds.W), float64(bounds.Y+bounds.H), float64(bounds.X), float64(bounds.Y+bounds.H), borderColor)
+	ebitenutil.DrawLine(screen, float64(bounds.X), float64(bounds.Y+bounds.H), float64(leftPoint), float64(verticalCenter), borderColor)
+}
