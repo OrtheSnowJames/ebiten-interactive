@@ -96,6 +96,7 @@ func (tf *TextField) IsUneditable() bool {
 
 // Update should be called every frame.
 func (tf *TextField) Update() {
+	// If uneditable than this is useless
 	if tf.Uneditable {
 		return
 	}
