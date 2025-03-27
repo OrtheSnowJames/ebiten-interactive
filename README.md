@@ -117,14 +117,14 @@ text, _ := interact.PasteClip()
 
 ## Font Loading
 
-Load custom fonts using the `LoadFontFace` function:
+Load custom fonts using the `LoadFontFace` and `SetDefaultFont` functions:
 
 ```go
 fontFace, err := interact.LoadFontFace("path/to/font.ttf", 16)
 if err != nil {
     panic(err)
 }
-interact.DefaultFont = fontFace
+interact.SetDefaultFont(fontFace)
 ```
 
 ---
@@ -161,7 +161,7 @@ func NewGame() *Game {
     if err != nil {
         log.Fatal(err)
     }
-    interact.DefaultFont = fontFace
+    interact.SetDefaultFont(fontFace)
 
     g := &Game{}
 

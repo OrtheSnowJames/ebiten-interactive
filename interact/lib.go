@@ -16,6 +16,11 @@ type InteractiveObject interface {
 	Draw(screen *ebiten.Image)
 }
 
+func SetDefaultFont(face font.Face) {
+	button.DefaultFont = face
+	textfield.DefaultFont = face
+}
+
 func NewButton(x, y, width, height float32, text string) *button.Button {
 	return button.NewButton(x, y, width, height, text)
 }
