@@ -12,6 +12,12 @@ import (
 	"golang.org/x/image/font"
 )
 
+var WhiteImage *ebiten.Image
+func init() {
+	WhiteImage = ebiten.NewImage(1, 1)
+	WhiteImage.Fill(color.White)
+}
+
 // Rect defines a rectangle with float32 coordinates.
 type Rect struct {
 	X, Y, W, H float32
@@ -301,7 +307,7 @@ func drawRoundedRect(screen *ebiten.Image, x, y, w, h, r float32, col color.RGBA
 	op := &ebiten.DrawTrianglesOptions{}
 	// Draw filled path
 	vertices, indices := path.AppendVerticesAndIndicesForFilling(nil, nil)
-	screen.DrawTriangles(vertices, indices, nil, op)
+	screen.DrawTriangles(vertices, indices, WhiteImage, op)
 }
 
 // Helper function to draw rounded rectangle outline.
@@ -354,7 +360,7 @@ func drawPointyButton(screen *ebiten.Image, bounds Rect, pointyAmount float32, f
 		vertices[i].ColorA = float32(fillColor.A) / 0xff
 	}
 
-	screen.DrawTriangles(vertices, indices, nil, op)
+	screen.DrawTriangles(vertices, indices, WhiteImage, op)
 
 	// Draw outline
 	ebitenutil.DrawLine(screen, float64(leftPoint), float64(verticalCenter), float64(bounds.X), float64(bounds.Y), borderColor)
