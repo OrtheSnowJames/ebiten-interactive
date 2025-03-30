@@ -6,8 +6,8 @@ if [ "$#" -ne 2 ]; then
     exit 1
 fi
 
-COMMIT_MESSAGE=$1
-TAG=$2
+COMMIT_MESSAGE=$2
+TAG=$1
 
 # Stage all changes
 git add .
