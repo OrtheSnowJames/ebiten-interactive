@@ -2,14 +2,14 @@
 package button
 
 import (
-	"image/color"
-	"math"
 	"github.com/OrtheSnowJames/ebiten-interactive/interact/colorscheme"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/text"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 	"golang.org/x/image/font"
+	"image/color"
+	"math"
 )
 
 // Rect defines a rectangle with float32 coordinates.
@@ -354,7 +354,10 @@ func drawPointyButton(screen *ebiten.Image, bounds Rect, pointyAmount float32, f
 		vertices[i].ColorA = float32(fillColor.A) / 0xff
 	}
 
-	screen.DrawTriangles(vertices, indices, nil, op)
+	whiteImage := ebiten.NewImage(1, 1)
+	whiteImage.Fill(color.White)
+
+	screen.DrawTriangles(vertices, indices, whiteImage, op)
 
 	// Draw outline
 	ebitenutil.DrawLine(screen, float64(leftPoint), float64(verticalCenter), float64(bounds.X), float64(bounds.Y), borderColor)
