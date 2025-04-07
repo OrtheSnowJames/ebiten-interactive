@@ -22,6 +22,10 @@ func NewRect(x, y, w, h float32) Rect {
 	return Rect{x, y, w, h}
 }
 
+func pasteClipboardText() (string, error) {
+	return clip.PasteClip()
+}
+
 func pointInRect(x, y float32, r Rect) bool {
 	return x >= r.X && x <= r.X+r.W && y >= r.Y && y <= r.Y+r.H
 }
@@ -175,12 +179,11 @@ func (tf *TextField) Update() {
 
 		// Handle Control+V (paste).
 		if inpututil.IsKeyJustPressed(ebiten.KeyV) && ebiten.IsKeyPressed(ebiten.KeyControl) {
-			clipboardText, err := clip.PasteClip()
-
+			clipboardText, err := pasteClipboardText()
 			if err != nil {
 				panic(fmt.Errorf("failed to paste text from clipboard (from ebiten-interactive textfield): %w", err))
 			}
-
+		
 			if clipboardText != "" {
 				remainingSpace := tf.MaxLength - len(tf.Text)
 				if remainingSpace > 0 {
@@ -193,6 +196,7 @@ func (tf *TextField) Update() {
 				}
 			}
 		}
+		
 	}
 }
 

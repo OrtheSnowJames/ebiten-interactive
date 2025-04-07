@@ -242,6 +242,12 @@ Run this example to see all the interactive components working together in a sin
 
 ---
 
+## A note about WASM
+
+For WASM, the clip package simply does nothing. You cannot paste into the textfields if you compile to WASM.
+
+---
+
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
